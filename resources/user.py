@@ -189,16 +189,6 @@ class User(MethodView):
         return user
 
     def delete(self, user_id):
-        user = UserModel.query.get_or_404(user_id)
-        db.session.delete(user)
-        db.session.commit()
-        return {"message": "User deleted."}, 200
-
-
-@blp.route("/refresh")
-class TokenRefresh(MethodView):
-    @jwt_required(refresh=True)
-    def post(self):
         """
         Delete User by ID
         ---
@@ -222,6 +212,42 @@ class TokenRefresh(MethodView):
             description: User not found
           500:
             description: Server error
+        """
+        user = UserModel.query.get_or_404(user_id)
+        db.session.delete(user)
+        db.session.commit()
+        return {"message": "User deleted."}, 200
+
+
+@blp.route("/refresh")
+class TokenRefresh(MethodView):
+    @jwt_required(refresh=True)
+    def post(self):
+        """
+        User Refresh
+        ---
+        tags:
+          - Users
+        consumes:
+          - application/json
+        parameters:
+          - in: header
+            name: Authorization
+            required: true
+            description: JWT Authorization header using the Bearer scheme. "
+            type: string
+        security:
+          - bearerAuth: []
+        responses:
+          200:
+            description: Successfully logged out
+            schema:
+              properties:
+                message:
+                  type: string
+                  description: Logout success message
+          401:
+            description: Missing or invalid token
         """
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
